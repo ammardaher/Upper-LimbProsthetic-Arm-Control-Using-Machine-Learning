@@ -1,0 +1,58 @@
+# Ignore compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Ignore virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# Ignore IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Ignore model files (too large)
+*.pkl
+*.h5
+*.pth
+models/*.pkl
+
+# Ignore data files
+data/training_data/*.csv
+data/test_data/*.csv
+data/raw_signals/*.bin
+data/raw_signals/*.csv
+
+# Ignore logs
+*.log
+logs/
+
+# Ignore pytest coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Ignore temporary files
+*.tmp
+*.temp
+*.bak
+
+# Ignore OS files
+.DS_Store
+Thumbs.db
+
+# Ignore build artifacts
+build/
+dist/
+*.egg-info/
+
+# Keep model structure but ignore large binary files
+!models/.gitkeep
+!models/model_metadata.json
