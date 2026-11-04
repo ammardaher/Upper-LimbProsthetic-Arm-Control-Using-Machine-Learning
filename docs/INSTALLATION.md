@@ -56,8 +56,8 @@ python3 --version
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/emg-prosthesis-control.git
-cd emg-prosthesis-control
+git clone https://github.com/ammardaher/Upper-LimbProsthetic-Arm-Control-Using-Machine-Learning.git
+cd Upper-LimbProsthetic-Arm-Control-Using-Machine-Learning
 
 # Create virtual environment
 python -m venv venv

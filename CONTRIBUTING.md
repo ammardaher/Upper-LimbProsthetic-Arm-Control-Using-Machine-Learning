@@ -69,8 +69,8 @@ Thank you for your interest in contributing! This document provides guidelines f
 #### Setup Development Environment
 ```bash
 # Clone your fork
-git clone https://github.com/yourusername/emg-prosthesis-control.git
-cd emg-prosthesis-control
+git clone https://github.com/ammardaher/Upper-LimbProsthetic-Arm-Control-Using-Machine-Learning.git
+cd Upper-LimbProsthetic-Arm-Control-Using-Machine-Learning
 
 # Create a virtual environment
 python -m venv venv

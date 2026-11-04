@@ -33,58 +33,30 @@ This project implements an intelligent prosthesis control system that:
 ## 📁 Project Structure
 
 ```
-emg-prosthesis-control/
-├── README.md                          # This file
-├── LICENSE                            # MIT License
-├── requirements.txt                   # Python dependencies
-├── CONTRIBUTING.md                    # Contribution guidelines
-├── .gitignore                         # Git ignore rules
-│
+Upper-LimbProsthetic-Arm-Control-Using-Machine-Learning/
+├── README.md
+├── LICENSE                        # MIT License
+├── CONTRIBUTING.md
+├── requirements.txt               # Python dependencies
+├── .gitignore
 ├── python/
-│   ├── emg_classifier.py             # Decision Tree classifier model
-│   ├── signal_processing.py          # EMG signal filtering & feature extraction
-│   ├── train_model.py                # Model training script
-│   ├── evaluate_model.py             # Model evaluation & testing
-│   ├── real_time_prediction.py       # Real-time classification from MYO
-│   └── utils.py                      # Helper functions
-│
+│   ├── signal_processing.py       # EMG filtering, normalisation, feature extraction
+│   └── emg_classifier.py          # Decision Tree classifier (train / predict / save / load)
 ├── arduino/
-│   ├── prosthesis_controller.ino     # Main Arduino sketch
-│   ├── servo_control.cpp             # Servo motor control library
-│   ├── serial_handler.cpp            # Serial communication handler
-│   └── config.h                      # Hardware configuration
-│
-├── data/
-│   ├── training_data/                # EMG datasets for training
-│   │   └── README.md
-│   ├── test_data/                    # Test datasets
-│   │   └── README.md
-│   └── raw_signals/                  # Raw EMG recordings
-│       └── README.md
-│
-├── models/
-│   ├── decision_tree_model.pkl       # Trained classifier (serialized)
-│   ├── model_metadata.json           # Model parameters & performance
-│   └── scaler.pkl                    # Signal scaler for normalization
-│
+│   └── prosthesis_controller.ino  # Servo control over serial
 ├── docs/
-│   ├── INSTALLATION.md               # Setup & installation guide
-│   ├── USAGE.md                      # How to use the system
-│   ├── HARDWARE_SETUP.md             # Hardware wiring & assembly
-│   ├── CALIBRATION.md                # MYO armband calibration
-│   ├── TROUBLESHOOTING.md            # Common issues & solutions
-│   └── API.md                        # Code API documentation
-│
-├── tests/
-│   ├── test_classifier.py            # Unit tests for ML model
-│   ├── test_signal_processing.py     # Signal processing tests
-│   └── test_serial_communication.py  # Serial communication tests
-│
-└── examples/
-    ├── basic_classification.py       # Simple classification example
-    ├── real_time_demo.py             # Real-time EMG demo
-    └── hardware_test.ino             # Arduino hardware test sketch
+│   ├── INSTALLATION.md
+│   └── USAGE.md
+└── tests/
+    ├── test_signal_processing.py
+    └── test_classifier.py
 ```
+
+> **Status:** the repository contains the processing and classification modules,
+> the Arduino controller and tests. The training / evaluation / real-time scripts
+> that `docs/INSTALLATION.md` and `docs/USAGE.md` refer to (`train_model.py`,
+> `evaluate_model.py`, `real_time_prediction.py`, ...) and pre-trained models are
+> not included yet; the examples below use the modules directly.
 
 ## 🚀 Quick Start
 
@@ -98,8 +70,8 @@ emg-prosthesis-control/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/emg-prosthesis-control.git
-   cd emg-prosthesis-control
+   git clone https://github.com/ammardaher/Upper-LimbProsthetic-Arm-Control-Using-Machine-Learning.git
+   cd Upper-LimbProsthetic-Arm-Control-Using-Machine-Learning
    ```
 
 2. **Install Python dependencies**
@@ -107,26 +79,37 @@ emg-prosthesis-control/
    pip install -r requirements.txt
    ```
 
-3. **Load Arduino sketch**
-   - Open `arduino/prosthesis_controller.ino` in Arduino IDE
+3. **Load the Arduino sketch**
+   - Open `arduino/prosthesis_controller.ino` in the Arduino IDE
    - Select your board type and COM port
-   - Upload to microcontroller
-
-4. **Download pre-trained model**
-   - Models are in `models/` directory
-   - Or train your own with `python/train_model.py`
+   - Upload to the microcontroller
 
 ### Usage
 
-**Real-time Classification**
-```bash
-python python/real_time_prediction.py
+**Features and classification in Python**
+```python
+import sys; sys.path.insert(0, "python")
+from signal_processing import process_emg_batch
+from emg_classifier import EMGClassifier
+
+# signals: (n_samples, 8 channels, n_points) at 200 Hz; labels: 0-3 (Pinch 1-4)
+X = process_emg_batch(signals, sampling_rate=200)
+clf = EMGClassifier(max_depth=32)
+clf.train(X, labels)
+print(clf.evaluate(X_test, y_test))   # held-out features / labels
+clf.save_model("models/decision_tree_model.pkl")
 ```
 
-**Test with existing data**
-```bash
-python python/evaluate_model.py
-```
+**Driving the hand (serial, 9600 baud)**
+
+| Command | Action |
+|---|---|
+| `0`-`3` | Pinch 1-4 |
+| `R` | rest position |
+| `D` | toggle debug output |
+
+The sketch returns to rest if no command arrives for 1 s, so the host should
+resend the current class continuously while a gesture is held.
 
 ## 📊 Performance Metrics
 
@@ -138,7 +121,7 @@ python python/evaluate_model.py
 
 ## 🔌 Hardware Connections
 
-See `docs/HARDWARE_SETUP.md` for detailed wiring diagrams and pin configurations.
+The servo pins are defined at the top of `arduino/prosthesis_controller.ino` (`SERVO_PIN_*`).
 
 **Basic Arduino Pinout:**
 - Servo 1 (Thumb): Pin 9
@@ -152,11 +135,7 @@ See `docs/HARDWARE_SETUP.md` for detailed wiring diagrams and pin configurations
 ## 📚 Documentation
 
 - **[Installation Guide](docs/INSTALLATION.md)** - Detailed setup instructions
-- **[Usage Guide](docs/USAGE.md)** - How to run the system
-- **[Hardware Setup](docs/HARDWARE_SETUP.md)** - Wiring & assembly
-- **[Calibration Guide](docs/CALIBRATION.md)** - MYO armband calibration
-- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues
-- **[API Documentation](docs/API.md)** - Code reference
+- **[Usage Guide](docs/USAGE.md)** - How to run the system (parts describe scripts not yet in the repository, see Status above)
 
 ## 🧪 Testing
 
@@ -165,24 +144,19 @@ Run the test suite:
 pytest tests/
 ```
 
+The classifier tests are skipped automatically if scikit-learn is not installed.
+
 ## 🔬 Model Training
 
-To train a new model with your own data:
-
-```bash
-python python/train_model.py \
-  --data data/training_data/emg_signals.csv \
-  --output models/custom_model.pkl \
-  --max_depth 32 \
-  --test_size 0.2
-```
+Train on your own recordings with the modules shown under Usage: build the
+feature matrix with `process_emg_batch`, then call `EMGClassifier.train`,
+`evaluate` and `save_model`.
 
 ## 🛠️ Troubleshooting
 
 ### MYO Not Connecting
 - Ensure MYO SDK is installed
 - Check Bluetooth connection
-- See `docs/TROUBLESHOOTING.md`
 
 ### Poor Classification Accuracy
 - Re-calibrate MYO armband
@@ -193,7 +167,7 @@ python python/train_model.py \
 ### Servo Motors Not Moving
 - Check Arduino connections
 - Verify servo power supply
-- Test with `examples/hardware_test.ino`
+- Send `0`-`3` / `R` from the Arduino Serial Monitor (9600 baud) to test each servo
 
 ## 📈 Future Improvements
 
@@ -238,7 +212,6 @@ EMG-Based Prosthesis Control Research Project
 
 - **Issues**: Use GitHub Issues for bug reports
 - **Discussions**: Use GitHub Discussions for questions
-- **Email**: your.email@example.com
 
 ## 📖 References
 
