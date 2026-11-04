@@ -23,25 +23,32 @@ class EMGSignalProcessor:
         self.n_channels = n_channels
     
     @staticmethod
-    def bandpass_filter(signal_data: np.ndarray, 
-                       lowcut: float = 20, 
-                       highcut: float = 500,
+    def bandpass_filter(signal_data: np.ndarray,
+                       lowcut: float = 20,
+                       highcut: float = 95,
                        order: int = 4,
                        fs: int = 200) -> np.ndarray:
         """
         Apply bandpass filter to EMG signal.
-        
+
         Args:
             signal_data: Raw EMG signal
             lowcut: Low frequency cutoff in Hz
-            highcut: High frequency cutoff in Hz
+            highcut: High frequency cutoff in Hz. Must be below the Nyquist
+                frequency (fs / 2); the MYO samples at 200 Hz, so the usable
+                EMG band ends just under 100 Hz.
             order: Filter order
             fs: Sampling frequency
-        
+
         Returns:
             Filtered signal
         """
         nyquist = fs / 2
+        if not 0 < lowcut < highcut < nyquist:
+            raise ValueError(
+                f"Need 0 < lowcut < highcut < fs/2 ({nyquist} Hz); "
+                f"got lowcut={lowcut}, highcut={highcut}, fs={fs}"
+            )
         low = lowcut / nyquist
         high = highcut / nyquist
         
@@ -224,7 +231,9 @@ def process_emg_batch(signals: np.ndarray,
     
     features = []
     for signal_data in signals:
-        feature_vector = processor.extract_all_features(signal_data)
+        # Each sample is (n_channels, n_points); extract_all_features expects
+        # (n_points, n_channels), so transpose before extracting per channel.
+        feature_vector = processor.extract_all_features(signal_data.T)
         features.append(feature_vector)
     
     return np.array(features)
